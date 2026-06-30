@@ -79,6 +79,8 @@ A continuación se detallan todos los hitos y características que hemos impleme
 | **14. Trazabilidad de Ciclo (60 Días)** | Modal interactivo que se abre al hacer clic en un registro y correlaciona la polinización (Día 0) con su posterior cosecha y pulpa (Día 60), mostrando un gráfico de barras comparativo y directo. | 🟢 Completado | [components/RecordList.js](components/RecordList.js) |
 | **15. Selectores Personalizados (CustomSelect)** | Reemplazo de los elementos `select` genéricos del navegador por un componente de menú desplegable premium con animaciones fluidas, soporte de iconos y click-outside. | 🟢 Completado | [components/CustomSelect.js](components/CustomSelect.js) |
 | **16. Conexión Supabase & Limpieza Header** | Configuración de credenciales de Supabase en `.env.local` decodificadas de los tokens provistos por el usuario. Remoción del badge de almacenamiento local en el header. | 🟢 Completado | [.env.local](.env.local), [app/page.js](app/page.js) |
+| **17. Optimización SEO & Hidratación** | Implementación de metadatos SEO en el layout, traducción a idioma español (`lang="es"`), y guards de montaje (`isMounted`) para evitar errores de hidratación. | 🟢 Completado | [app/layout.js](app/layout.js), [components/Charts.js](components/Charts.js), [components/RecordList.js](components/RecordList.js) |
+| **18. Leyenda de Gráficos Responsiva (Sticky)** | Extracción de la leyenda del contenedor de scroll horizontal del gráfico SVG, renderizándola como HTML estático debajo del gráfico para evitar cortes o desplazamientos extraños. | 🟢 Completado | [components/Charts.js](components/Charts.js) |
 
 ---
 

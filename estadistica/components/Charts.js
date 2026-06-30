@@ -355,11 +355,20 @@ export default function Charts({ records }) {
     return null;
   };
 
+  if (!isMounted) {
+    return (
+      <div className="h-[40vh] flex flex-col items-center justify-center gap-2">
+        <div className="w-8 h-8 rounded-full border-4 border-emerald-500/20 border-t-emerald-600 animate-spin" />
+        <p className="text-xs text-zinc-400 dark:text-zinc-500">Cargando gráficos...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex flex-col gap-6 pb-20">
 
       {/* 1. Métricas destacadas: Totales Históricos */}
-      <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+      <div>
         <h2 className="text-sm font-semibold tracking-wider text-zinc-400 dark:text-zinc-500 uppercase mb-3 flex items-center gap-1.5 px-1">
           <Award className="w-4 h-4 text-emerald-500" />
           Totales Registrados en la Base de Datos
@@ -599,135 +608,143 @@ export default function Charts({ records }) {
               </p>
             </div>
           ) : (
-            <div className="w-full overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-800 scrollbar-track-transparent">
-              <div style={{ width: chartWidth, height: '280px' }} className="min-w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  {chartType === 'area' ? (
-                    <AreaChart data={chartData} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="colorFlores" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                          <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
-                        </linearGradient>
-                        <linearGradient id="colorKg" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4} />
-                          <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
-                        </linearGradient>
-                        <linearGradient id="colorPulpa" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e4e4e7" className="dark:stroke-zinc-800/60" />
-                      <XAxis
-                        dataKey="fecha"
-                        tickFormatter={formatXAxis}
-                        stroke="#a1a1aa"
-                        fontSize={10}
-                        fontFamily="inherit"
-                        fontWeight={500}
-                        dy={8}
-                        tickLine={false}
-                      />
-                      <YAxis
-                        stroke="#a1a1aa"
-                        fontSize={10}
-                        fontFamily="inherit"
-                        fontWeight={500}
-                        dx={-8}
-                        tickLine={false}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend
-                        verticalAlign="bottom"
-                        height={36}
-                        iconType="circle"
-                        iconSize={8}
-                        formatter={(value) => (
-                          <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-                            {categoriaLabels[value]}
-                          </span>
+            <div className="w-full flex flex-col gap-4">
+              <div className="w-full overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+                <div style={{ width: chartWidth, height: '260px' }} className="min-w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    {chartType === 'area' ? (
+                      <AreaChart data={chartData} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="colorFlores" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                          </linearGradient>
+                          <linearGradient id="colorKg" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
+                          </linearGradient>
+                          <linearGradient id="colorPulpa" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e4e4e7" className="dark:stroke-zinc-800/60" />
+                        <XAxis
+                          dataKey="fecha"
+                          tickFormatter={formatXAxis}
+                          stroke="#a1a1aa"
+                          fontSize={10}
+                          fontFamily="inherit"
+                          fontWeight={500}
+                          dy={8}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          stroke="#a1a1aa"
+                          fontSize={10}
+                          fontFamily="inherit"
+                          fontWeight={500}
+                          dx={-8}
+                          tickLine={false}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        {(categoriaFilter === 'todos' || categoriaFilter === 'flores_polinizadas') && (
+                          <Area
+                            type="monotone"
+                            dataKey="flores_polinizadas"
+                            stroke="#10b981"
+                            strokeWidth={2}
+                            fillOpacity={1}
+                            fill="url(#colorFlores)"
+                            activeDot={{ r: 5 }}
+                          />
                         )}
-                      />
-                      {(categoriaFilter === 'todos' || categoriaFilter === 'flores_polinizadas') && (
-                        <Area
-                          type="monotone"
-                          dataKey="flores_polinizadas"
-                          stroke="#10b981"
-                          strokeWidth={2}
-                          fillOpacity={1}
-                          fill="url(#colorFlores)"
-                          activeDot={{ r: 5 }}
-                        />
-                      )}
-                      {(categoriaFilter === 'todos' || categoriaFilter === 'kg_cosechados') && (
-                        <Area
-                          type="monotone"
-                          dataKey="kg_cosechados"
-                          stroke="#f59e0b"
-                          strokeWidth={2}
-                          fillOpacity={1}
-                          fill="url(#colorKg)"
-                          activeDot={{ r: 5 }}
-                        />
-                      )}
-                      {(categoriaFilter === 'todos' || categoriaFilter === 'pulpa_cosechada') && (
-                        <Area
-                          type="monotone"
-                          dataKey="pulpa_cosechada"
-                          stroke="#3b82f6"
-                          strokeWidth={2}
-                          fillOpacity={1}
-                          fill="url(#colorPulpa)"
-                          activeDot={{ r: 5 }}
-                        />
-                      )}
-                    </AreaChart>
-                  ) : (
-                    <BarChart data={chartData} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e4e4e7" className="dark:stroke-zinc-800/60" />
-                      <XAxis
-                        dataKey="fecha"
-                        tickFormatter={formatXAxis}
-                        stroke="#a1a1aa"
-                        fontSize={10}
-                        fontFamily="inherit"
-                        fontWeight={500}
-                        dy={8}
-                        tickLine={false}
-                      />
-                      <YAxis
-                        stroke="#a1a1aa"
-                        fontSize={10}
-                        fontFamily="inherit"
-                        fontWeight={500}
-                        dx={-8}
-                        tickLine={false}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend
-                        verticalAlign="bottom"
-                        height={36}
-                        iconType="circle"
-                        iconSize={8}
-                        formatter={(value) => (
-                          <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-                            {categoriaLabels[value]}
-                          </span>
+                        {(categoriaFilter === 'todos' || categoriaFilter === 'kg_cosechados') && (
+                          <Area
+                            type="monotone"
+                            dataKey="kg_cosechados"
+                            stroke="#f59e0b"
+                            strokeWidth={2}
+                            fillOpacity={1}
+                            fill="url(#colorKg)"
+                            activeDot={{ r: 5 }}
+                          />
                         )}
-                      />
-                      {(categoriaFilter === 'todos' || categoriaFilter === 'flores_polinizadas') && (
-                        <Bar dataKey="flores_polinizadas" fill="#10b981" radius={[4, 4, 0, 0]} />
-                      )}
-                      {(categoriaFilter === 'todos' || categoriaFilter === 'kg_cosechados') && (
-                        <Bar dataKey="kg_cosechados" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-                      )}
-                      {(categoriaFilter === 'todos' || categoriaFilter === 'pulpa_cosechada') && (
-                        <Bar dataKey="pulpa_cosechada" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                      )}
-                    </BarChart>
-                  )}
-                </ResponsiveContainer>
+                        {(categoriaFilter === 'todos' || categoriaFilter === 'pulpa_cosechada') && (
+                          <Area
+                            type="monotone"
+                            dataKey="pulpa_cosechada"
+                            stroke="#3b82f6"
+                            strokeWidth={2}
+                            fillOpacity={1}
+                            fill="url(#colorPulpa)"
+                            activeDot={{ r: 5 }}
+                          />
+                        )}
+                      </AreaChart>
+                    ) : (
+                      <BarChart data={chartData} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e4e4e7" className="dark:stroke-zinc-800/60" />
+                        <XAxis
+                          dataKey="fecha"
+                          tickFormatter={formatXAxis}
+                          stroke="#a1a1aa"
+                          fontSize={10}
+                          fontFamily="inherit"
+                          fontWeight={500}
+                          dy={8}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          stroke="#a1a1aa"
+                          fontSize={10}
+                          fontFamily="inherit"
+                          fontWeight={500}
+                          dx={-8}
+                          tickLine={false}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        {(categoriaFilter === 'todos' || categoriaFilter === 'flores_polinizadas') && (
+                          <Bar dataKey="flores_polinizadas" fill="#10b981" radius={[4, 4, 0, 0]} />
+                        )}
+                        {(categoriaFilter === 'todos' || categoriaFilter === 'kg_cosechados') && (
+                          <Bar dataKey="kg_cosechados" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                        )}
+                        {(categoriaFilter === 'todos' || categoriaFilter === 'pulpa_cosechada') && (
+                          <Bar dataKey="pulpa_cosechada" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                        )}
+                      </BarChart>
+                    )}
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Leyenda Altamente Responsiva y Estática Fuera del Scroll */}
+              <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 px-2 py-1.5 bg-zinc-50/50 dark:bg-zinc-950/20 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/40">
+                {(categoriaFilter === 'todos' || categoriaFilter === 'flores_polinizadas') && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                    <span className="text-[10px] sm:text-xs font-bold text-zinc-650 dark:text-zinc-350">
+                      Flores (uds)
+                    </span>
+                  </div>
+                )}
+                {(categoriaFilter === 'todos' || categoriaFilter === 'kg_cosechados') && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 flex-shrink-0" />
+                    <span className="text-[10px] sm:text-xs font-bold text-zinc-650 dark:text-zinc-350">
+                      Cosecha (kg)
+                    </span>
+                  </div>
+                )}
+                {(categoriaFilter === 'todos' || categoriaFilter === 'pulpa_cosechada') && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0" />
+                    <span className="text-[10px] sm:text-xs font-bold text-zinc-650 dark:text-zinc-350">
+                      Pulpa Procesada (kg)
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}

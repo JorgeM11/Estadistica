@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Plus,
   Edit2,
@@ -30,6 +30,11 @@ import {
 import CustomSelect from './CustomSelect';
 
 export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Estados para filtrar y ordenar el historial
   const [filterCat, setFilterCat] = useState('todos');
   const [filterDate, setFilterDate] = useState('');
@@ -253,6 +258,15 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
       return dateStr;
     }
   };
+
+  if (!isMounted) {
+    return (
+      <div className="h-[40vh] flex flex-col items-center justify-center gap-2">
+        <div className="w-8 h-8 rounded-full border-4 border-emerald-500/20 border-t-emerald-600 animate-spin" />
+        <p className="text-xs text-zinc-400 dark:text-zinc-500">Cargando historial...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex flex-col gap-4 pb-24">
