@@ -83,6 +83,7 @@ A continuación se detallan todos los hitos y características que hemos impleme
 | **18. Leyenda de Gráficos Responsiva (Sticky)** | Extracción de la leyenda del contenedor de scroll horizontal del gráfico SVG, renderizándola como HTML estático debajo del gráfico para evitar cortes o desplazamientos extraños. | 🟢 Completado | [components/Charts.js](components/Charts.js) |
 | **19. Paginación de Registros (20 en 20)** | División del listado del historial en páginas de 20 registros con controles de navegación responsivos y reseteo automático al filtrar o reordenar. | 🟢 Completado | [components/RecordList.js](components/RecordList.js) |
 | **20. Reducción de Leyenda del Ciclo** | Ajuste de tamaño de fuente a `9px` y del icono a `4px` en la leyenda del gráfico de barras de trazabilidad dentro del modal para mejorar la legibilidad. | 🟢 Completado | [components/RecordList.js](components/RecordList.js) |
+| **21. Icono PWA Premium Personalizado** | Generación de una imagen de parchita con un gráfico de fondo en fondo verde esmeralda sólido (sin marcos internos ni anidados) y conversión a PNG en tamaños `192x192` y `512x512` para instalación de PWA. | 🟢 Completado | [public/icon-192x192.png](public/icon-192x192.png), [public/icon-512x512.png](public/icon-512x512.png) |
 
 ---
 
