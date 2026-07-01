@@ -165,7 +165,7 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
 
   // Paginación de registros de 20 en 20
   const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 20;
+  const recordsPerPage = 15;
 
   // Resetear a la página 1 cuando cambian los filtros o el ordenamiento
   useEffect(() => {
@@ -482,12 +482,16 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
                 type="button"
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                className="px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-950 active:scale-[0.98] transition-all disabled:opacity-40 disabled:pointer-events-none shadow-sm flex items-center gap-1 cursor-pointer"
+                className={`px-4 py-2 text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-1 cursor-pointer ${
+                  currentPage === 1
+                    ? 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-650 opacity-40 pointer-events-none'
+                    : 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white border border-transparent'
+                }`}
               >
                 Anterior
               </button>
 
-              <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs font-bold text-zinc-550 dark:text-zinc-350">
                 Página {currentPage} de {totalPages}
               </span>
 
@@ -495,7 +499,11 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
                 type="button"
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                className="px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-950 active:scale-[0.98] transition-all disabled:opacity-40 disabled:pointer-events-none shadow-sm flex items-center gap-1 cursor-pointer"
+                className={`px-4 py-2 text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-1 cursor-pointer ${
+                  currentPage === totalPages
+                    ? 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-650 opacity-40 pointer-events-none'
+                    : 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white border border-transparent'
+                }`}
               >
                 Siguiente
               </button>
@@ -610,7 +618,7 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-3 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-700 dark:text-zinc-200 font-semibold text-sm rounded-xl transition-all cursor-pointer text-center"
+                  className="flex-1 py-3 bg-zinc-100 hover:bg-zinc-200 hover:text-black dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-700 dark:text-zinc-200 font-semibold text-sm rounded-xl transition-all cursor-pointer text-center"
                 >
                   Cancelar
                 </button>
@@ -663,14 +671,14 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
                   setIsDeleteConfirmOpen(false);
                   setRecordToDelete(null);
                 }}
-                className="flex-1 py-2.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-700 dark:text-zinc-200 font-semibold text-xs rounded-xl transition-all cursor-pointer"
+                className="flex-1 py-2.5 bg-zinc-100 hover:text-black hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-700 dark:text-zinc-200 font-semibold text-xs rounded-xl transition-all cursor-pointer"
               >
                 Cancelar
               </button>
               <button
                 type="button"
                 onClick={handleConfirmDelete}
-                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-xl shadow-md transition-all cursor-pointer"
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700  text-white font-semibold text-xs rounded-xl shadow-md transition-all cursor-pointer"
               >
                 Eliminar
               </button>
