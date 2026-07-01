@@ -49,6 +49,8 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null); // Si es null, estamos creando
   const [recordToDelete, setRecordToDelete] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Calcular fechas del ciclo de 60 días
   const cycleDates = useMemo(() => {
@@ -213,7 +215,7 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
   };
 
   // Guardar registro (Crear o Editar)
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     
     // Validación
@@ -239,13 +241,23 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
       fecha: fecha
     };
 
-    if (editingRecord) {
-      onUpdate(editingRecord.id, payload);
-    } else {
-      onCreate(payload);
+    setIsSaving(true);
+    let success = false;
+    try {
+      if (editingRecord) {
+        success = await onUpdate(editingRecord.id, payload);
+      } else {
+        success = await onCreate(payload);
+      }
+    } catch (err) {
+      console.error('Error al guardar:', err);
+    } finally {
+      setIsSaving(false);
     }
 
-    setIsModalOpen(false);
+    if (success) {
+      setIsModalOpen(false);
+    }
   };
 
   // Abrir confirmación de eliminación
@@ -254,11 +266,22 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
     setIsDeleteConfirmOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (recordToDelete) {
-      onDelete(recordToDelete.id);
-      setIsDeleteConfirmOpen(false);
-      setRecordToDelete(null);
+      setIsDeleting(true);
+      let success = false;
+      try {
+        success = await onDelete(recordToDelete.id);
+      } catch (err) {
+        console.error('Error al eliminar:', err);
+      } finally {
+        setIsDeleting(false);
+      }
+
+      if (success) {
+        setIsDeleteConfirmOpen(false);
+        setRecordToDelete(null);
+      }
     }
   };
 
@@ -495,7 +518,20 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
       {/* Modal de Crear / Editar (Slide up en mobile, centrado en desktop) */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-900 w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[auto] animate-in slide-in-from-bottom duration-300">
+          <div className="relative bg-white dark:bg-zinc-900 w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[auto] animate-in slide-in-from-bottom duration-300">
+            {/* Loading Overlay */}
+            {isSaving && (
+              <div className="absolute inset-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-[1px] z-50 flex flex-col items-center justify-center gap-3 animate-in fade-in duration-150">
+                <div className="relative flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full border-4 border-emerald-500/20 border-t-emerald-600 animate-spin" />
+                  <Sprout className="w-4 h-4 text-emerald-500 absolute animate-bounce" />
+                </div>
+                <p className="text-xs font-bold text-zinc-650 dark:text-zinc-350">
+                  {editingRecord ? 'Guardando cambios...' : 'Registrando hito...'}
+                </p>
+              </div>
+            )}
+
             {/* Header del Modal */}
             <div className="flex items-center justify-between p-5 border-b border-zinc-100 dark:border-zinc-850">
               <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
@@ -593,14 +629,24 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
       {/* Diálogo de Confirmación de Eliminación */}
       {isDeleteConfirmOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-2xl p-5 flex flex-col gap-4 animate-in zoom-in-95 duration-200">
+          <div className="relative overflow-hidden bg-white dark:bg-zinc-900 w-full max-w-sm rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-2xl p-5 flex flex-col gap-4 animate-in zoom-in-95 duration-200">
+            {/* Loading Overlay */}
+            {isDeleting && (
+              <div className="absolute inset-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-[1px] z-50 flex flex-col items-center justify-center gap-3 animate-in fade-in duration-150">
+                <div className="relative flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full border-4 border-red-500/20 border-t-red-600 animate-spin" />
+                  <Trash2 className="w-4 h-4 text-red-500 absolute animate-bounce" />
+                </div>
+                <p className="text-xs font-bold text-zinc-650 dark:text-zinc-350">Eliminando hito...</p>
+              </div>
+            )}
+
             <div className="flex items-center gap-3 text-red-500">
               <div className="p-2 bg-red-500/10 rounded-xl">
                 <AlertTriangle className="w-6 h-6" />
               </div>
               <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50">¿Eliminar Registro?</h3>
             </div>
-            
             <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
               Esta acción no se puede deshacer. Se eliminará el registro de{' '}
               <strong className="text-zinc-700 dark:text-zinc-300">
@@ -642,7 +688,7 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
               <div className="flex items-center gap-2">
                 <Sprout className="w-5 h-5 text-emerald-500" />
                 <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-50">
-                  Trazabilidad de Cultivo (Ciclo 60 Días)
+                  Ciclo de 60 Días
                 </h3>
               </div>
               <button

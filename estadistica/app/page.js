@@ -58,9 +58,11 @@ export default function Home() {
       // Recargar para obtener la lista ordenada completa y limpia
       const data = await getRecords();
       setRecords(data);
+      return true;
     } catch (err) {
       console.error('Error creando registro:', err);
       alert('Error al guardar el nuevo registro.');
+      return false;
     } finally {
       setRefreshing(false);
     }
@@ -74,9 +76,11 @@ export default function Home() {
       // Recargar datos
       const data = await getRecords();
       setRecords(data);
+      return true;
     } catch (err) {
       console.error('Error editando registro:', err);
       alert('Error al actualizar el registro.');
+      return false;
     } finally {
       setRefreshing(false);
     }
@@ -90,9 +94,11 @@ export default function Home() {
       // Recargar datos
       const data = await getRecords();
       setRecords(data);
+      return true;
     } catch (err) {
       console.error('Error eliminando registro:', err);
       alert('Error al borrar el registro.');
+      return false;
     } finally {
       setRefreshing(false);
     }
