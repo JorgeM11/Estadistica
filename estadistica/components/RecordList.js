@@ -161,6 +161,24 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
     });
   }, [records, filterCat, filterDate, sortOption]);
 
+  // Paginación de registros de 20 en 20
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 20;
+
+  // Resetear a la página 1 cuando cambian los filtros o el ordenamiento
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterCat, filterDate, sortOption]);
+
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredRecords.length / recordsPerPage);
+  }, [filteredRecords]);
+
+  const paginatedRecords = useMemo(() => {
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    return filteredRecords.slice(startIndex, startIndex + recordsPerPage);
+  }, [filteredRecords, currentPage]);
+
   // Estados del Formulario
   const [tipoRegistro, setTipoRegistro] = useState('flores_polinizadas');
   const [cantidad, setCantidad] = useState('');
@@ -368,69 +386,98 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
               </p>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
-              {filteredRecords.map((record) => {
-            const detalles = tipoDetalles[record.tipo_registro] || {
-              label: record.tipo_registro,
-              unit: '',
-              color: 'zinc',
-              icon: <Layers className="w-5 h-5 text-zinc-400" />
-            };
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3">
+                {paginatedRecords.map((record) => {
+              const detalles = tipoDetalles[record.tipo_registro] || {
+                label: record.tipo_registro,
+                unit: '',
+                color: 'zinc',
+                icon: <Layers className="w-5 h-5 text-zinc-400" />
+              };
 
-            const colors = {
-              emerald: 'border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/5',
-              amber: 'border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/5',
-              blue: 'border-blue-500/30 bg-blue-500/5 dark:bg-blue-500/5',
-              zinc: 'border-zinc-500/30 bg-zinc-500/5 dark:bg-zinc-500/5'
-            }[detalles.color];
+              const colors = {
+                emerald: 'border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/5',
+                amber: 'border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/5',
+                blue: 'border-blue-500/30 bg-blue-500/5 dark:bg-blue-500/5',
+                zinc: 'border-zinc-500/30 bg-zinc-500/5 dark:bg-zinc-500/5'
+              }[detalles.color];
 
-            return (
-              <div
-                key={record.id}
-                onClick={() => handleOpenCycleModal(record)}
-                className="flex items-center justify-between p-4 rounded-2xl border bg-white dark:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800 shadow-sm transition-all hover:scale-[1.005] cursor-pointer hover:border-emerald-500/40 dark:hover:border-emerald-500/30"
+              return (
+                <div
+                  key={record.id}
+                  onClick={() => handleOpenCycleModal(record)}
+                  className="flex items-center justify-between p-4 rounded-2xl border bg-white dark:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800 shadow-sm transition-all hover:scale-[1.005] cursor-pointer hover:border-emerald-500/40 dark:hover:border-emerald-500/30"
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="p-3 bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/80 rounded-xl shadow-sm flex-shrink-0">
+                      {detalles.icon}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">{detalles.label}</p>
+                      <h4 className="text-lg font-extrabold text-zinc-950 dark:text-zinc-50 mt-0.5">
+                        {Number(record.cantidad).toLocaleString('es-ES')} <span className="text-sm font-normal text-zinc-500">{detalles.unit}</span>
+                      </h4>
+                      <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1 flex items-center gap-1 capitalize">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {formatReadableDate(record.fecha)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 ml-4">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenEdit(record);
+                      }}
+                      className="p-2.5 rounded-xl border border-zinc-200/50 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 transition-colors cursor-pointer"
+                      title="Editar registro"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenDelete(record);
+                      }}
+                      className="p-2.5 rounded-xl border border-red-200/30 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all cursor-pointer"
+                      title="Eliminar registro"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Controles de Paginación */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-3 px-1 select-none">
+              <button
+                type="button"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                className="px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-950 active:scale-[0.98] transition-all disabled:opacity-40 disabled:pointer-events-none shadow-sm flex items-center gap-1 cursor-pointer"
               >
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="p-3 bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/80 rounded-xl shadow-sm flex-shrink-0">
-                    {detalles.icon}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">{detalles.label}</p>
-                    <h4 className="text-lg font-extrabold text-zinc-950 dark:text-zinc-50 mt-0.5">
-                      {Number(record.cantidad).toLocaleString('es-ES')} <span className="text-sm font-normal text-zinc-500">{detalles.unit}</span>
-                    </h4>
-                    <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1 flex items-center gap-1 capitalize">
-                      <Calendar className="w-3.5 h-3.5" />
-                      {formatReadableDate(record.fecha)}
-                    </p>
-                  </div>
-                </div>
+                Anterior
+              </button>
 
-                <div className="flex items-center gap-1.5 ml-4">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenEdit(record);
-                    }}
-                    className="p-2.5 rounded-xl border border-zinc-200/50 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 transition-colors cursor-pointer"
-                    title="Editar registro"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenDelete(record);
-                    }}
-                    className="p-2.5 rounded-xl border border-red-200/30 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all cursor-pointer"
-                    title="Eliminar registro"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+              <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">
+                Página {currentPage} de {totalPages}
+              </span>
+
+              <button
+                type="button"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                className="px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-350 hover:bg-zinc-50 dark:hover:bg-zinc-950 active:scale-[0.98] transition-all disabled:opacity-40 disabled:pointer-events-none shadow-sm flex items-center gap-1 cursor-pointer"
+              >
+                Siguiente
+              </button>
+            </div>
+          )}
         </div>
       )}
     </>
@@ -712,7 +759,18 @@ export default function RecordList({ records, onCreate, onUpdate, onDelete }) {
                           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
                         }}
                       />
-                      <Legend verticalAlign="bottom" height={28} iconType="circle" iconSize={7} />
+                      <Legend 
+                        verticalAlign="bottom" 
+                        height={28} 
+                        iconType="circle" 
+                        iconSize={4} 
+                        wrapperStyle={{ fontSize: '9px', fontWeight: 'bold' }}
+                        formatter={(value) => (
+                          <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 ml-1">
+                            {value}
+                          </span>
+                        )}
+                      />
                       <Bar dataKey="Flores (uds)" fill="#10b981" radius={[4, 4, 0, 0]} barSize={25} />
                       <Bar dataKey="Cosecha (kg)" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={25} />
                       <Bar dataKey="Pulpa (kg)" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={25} />

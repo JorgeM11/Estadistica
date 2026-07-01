@@ -81,6 +81,8 @@ A continuación se detallan todos los hitos y características que hemos impleme
 | **16. Conexión Supabase & Limpieza Header** | Configuración de credenciales de Supabase en `.env.local` decodificadas de los tokens provistos por el usuario. Remoción del badge de almacenamiento local en el header. | 🟢 Completado | [.env.local](.env.local), [app/page.js](app/page.js) |
 | **17. Optimización SEO & Hidratación** | Implementación de metadatos SEO en el layout, traducción a idioma español (`lang="es"`), y guards de montaje (`isMounted`) para evitar errores de hidratación. | 🟢 Completado | [app/layout.js](app/layout.js), [components/Charts.js](components/Charts.js), [components/RecordList.js](components/RecordList.js) |
 | **18. Leyenda de Gráficos Responsiva (Sticky)** | Extracción de la leyenda del contenedor de scroll horizontal del gráfico SVG, renderizándola como HTML estático debajo del gráfico para evitar cortes o desplazamientos extraños. | 🟢 Completado | [components/Charts.js](components/Charts.js) |
+| **19. Paginación de Registros (20 en 20)** | División del listado del historial en páginas de 20 registros con controles de navegación responsivos y reseteo automático al filtrar o reordenar. | 🟢 Completado | [components/RecordList.js](components/RecordList.js) |
+| **20. Reducción de Leyenda del Ciclo** | Ajuste de tamaño de fuente a `9px` y del icono a `4px` en la leyenda del gráfico de barras de trazabilidad dentro del modal para mejorar la legibilidad. | 🟢 Completado | [components/RecordList.js](components/RecordList.js) |
 
 ---
 
