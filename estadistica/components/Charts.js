@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -26,8 +26,58 @@ import {
   Percent,
   Clock,
   Activity,
+  Sprout,
+  Target,
+  Package,
+  DollarSign,
 } from 'lucide-react';
 import CustomSelect from './CustomSelect';
+
+const ParchitaIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z" fill="currentColor" fillOpacity="0.1" />
+    <circle cx="10" cy="12" r="0.75" fill="currentColor" />
+    <circle cx="13" cy="10.5" r="0.75" fill="currentColor" />
+    <circle cx="10.5" cy="15" r="0.75" fill="currentColor" />
+    <circle cx="14" cy="14" r="0.75" fill="currentColor" />
+    <circle cx="14.5" cy="11.5" r="0.75" fill="currentColor" />
+    <circle cx="11" cy="10" r="0.75" fill="currentColor" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 7c0-1.8 1.2-3 2.5-3" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 7c-1.2 0-2 .8-2 1.8s.8 1.8 2 1.8" fill="currentColor" fillOpacity="0.2" />
+  </svg>
+);
+
+const SacoIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 20c0 1.1 2.7 2 6 2s6-.9 6-2V8c0-1.1-2.7-2-6-2s-6 .9-6 2v12Z" fill="currentColor" fillOpacity="0.1" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 8c0 .8 2.7 1.5 6 1.5s6-.7 6-1.5" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5c.5-1.5 1.5-2 3-2s2.5.5 3 2" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 12v4M10 14h4" />
+  </svg>
+);
+
+const KpiCard = ({ title, value, unit, subtitle, icon: Icon, colorClass, bgClass, circleColorClass, children }) => {
+  return (
+    <div className="bg-gradient-to-br from-white to-zinc-50/50 dark:from-zinc-900 dark:to-zinc-900/40 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden flex items-center gap-4 w-full">
+      <div className={`p-3 ${bgClass} rounded-xl ${colorClass} flex-shrink-0 z-10`}>
+        <Icon className="w-6 h-6" />
+      </div>
+      <div className="min-w-0 flex-1 z-10">
+        <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase truncate">{title}</p>
+        <div className="flex items-center justify-between flex-wrap gap-x-2 gap-y-1.5 mt-0.5">
+          <h3 className="text-xl font-bold text-zinc-950 dark:text-zinc-50 leading-none">
+            {value} <span className="text-xs font-normal text-zinc-500">{unit}</span>
+          </h3>
+          {children}
+        </div>
+        <p className="text-[10px] text-zinc-450 dark:text-zinc-500 mt-1.5 truncate" title={subtitle}>
+          {subtitle}
+        </p>
+      </div>
+      <div className={`absolute top-0 right-0 w-16 h-16 ${circleColorClass} rounded-full translate-x-4 -translate-y-4`} />
+    </div>
+  );
+};
 
 export default function Charts({ records }) {
   const [isMounted, setIsMounted] = useState(false);
@@ -48,6 +98,35 @@ export default function Charts({ records }) {
   
   // Período del widget de resumen temporal inferior (con respecto a hoy)
   const [resumenPeriodo, setResumenPeriodo] = useState('mensual'); 
+
+  // Estado para el cálculo interactivo de Ganancia Aprox (precio por saco)
+  const [precioSaco, setPrecioSaco] = useState(18); 
+
+  // Estado para la paginación/deslizamiento de KPIs en móviles
+  const [activeKpiSlide, setActiveKpiSlide] = useState(0);
+  const kpiScrollRef = useRef(null);
+
+  const scrollToSlide = (index) => {
+    if (kpiScrollRef.current) {
+      const width = kpiScrollRef.current.clientWidth;
+      kpiScrollRef.current.scrollTo({
+        left: index * width,
+        behavior: 'smooth'
+      });
+      setActiveKpiSlide(index);
+    }
+  };
+
+  const handleKpiScroll = (e) => {
+    const scrollLeft = e.currentTarget.scrollLeft;
+    const width = e.currentTarget.clientWidth;
+    if (width > 0) {
+      const newSlide = Math.round(scrollLeft / width);
+      if (newSlide !== activeKpiSlide) {
+        setActiveKpiSlide(newSlide);
+      }
+    }
+  };
 
   // Evitar problemas de hidratación en Next.js con Recharts
   useEffect(() => {
@@ -132,6 +211,26 @@ export default function Charts({ records }) {
 
     return totals;
   }, [records]);
+
+  // 1.5 Calcular KPIs generales adicionales
+  const kpisCalculados = useMemo(() => {
+    const totals = metricasDestacadas;
+    
+    // 1) Frutos sanos esperados: 50% de las flores totales
+    const frutosSanos = Math.round(totals.flores_polinizadas * 0.5);
+
+    // 2) Sacos Aprox: frutos sanos entre 110
+    const sacosAprox = frutosSanos > 0 ? frutosSanos / 110 : 0;
+
+    // 3) Ganancia Aprox: sacos multiplicado por el precio del saco ingresado
+    const gananciaAprox = sacosAprox * precioSaco;
+
+    return {
+      frutosSanos,
+      sacosAprox,
+      gananciaAprox
+    };
+  }, [metricasDestacadas, precioSaco]);
 
   // 2. Filtrar registros en base a filtros de fecha únicamente (independiente de la categoría)
   const recordsFilteredByTime = useMemo(() => {
@@ -373,56 +472,193 @@ export default function Charts({ records }) {
           <Award className="w-4 h-4 text-emerald-500" />
           Totales Registrados en la Base de Datos
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {/* Card Flores */}
-          <div className="bg-gradient-to-br from-white to-zinc-50/50 dark:from-zinc-900 dark:to-zinc-900/40 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden flex items-center gap-4">
-            <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-500 flex-shrink-0">
-              <Leaf className="w-6 h-6" />
+        
+        {/* Vista Laptop/Desktop: Grid de 2 filas de 3 columnas */}
+        <div className="hidden md:grid md:grid-cols-3 gap-3">
+          <KpiCard
+            title="Flores"
+            value={metricasDestacadas.flores_polinizadas.toLocaleString('es-ES')}
+            unit="uds"
+            subtitle="Total histórico acumulado"
+            icon={Leaf}
+            colorClass="text-emerald-500"
+            bgClass="bg-emerald-500/10"
+            circleColorClass="bg-emerald-500/5"
+          />
+          <KpiCard
+            title="Kilos Cosechados"
+            value={metricasDestacadas.kg_cosechados.toLocaleString('es-ES')}
+            unit="kg"
+            subtitle="Total histórico acumulado"
+            icon={Scale}
+            colorClass="text-amber-500"
+            bgClass="bg-amber-500/10"
+            circleColorClass="bg-amber-500/5"
+          />
+          <KpiCard
+            title="Pulpa Cosechada"
+            value={metricasDestacadas.pulpa_cosechada.toLocaleString('es-ES')}
+            unit="kg"
+            subtitle="Total histórico acumulado"
+            icon={Percent}
+            colorClass="text-blue-500"
+            bgClass="bg-blue-500/10"
+            circleColorClass="bg-blue-500/5"
+          />
+          <KpiCard
+            title="Frutos Sanos Esperados"
+            value={kpisCalculados.frutosSanos.toLocaleString('es-ES')}
+            unit="uds"
+            subtitle="Est. del 50% de flores totales"
+            icon={ParchitaIcon}
+            colorClass="text-indigo-500"
+            bgClass="bg-indigo-500/10"
+            circleColorClass="bg-indigo-500/5"
+          />
+          <KpiCard
+            title="Sacos Aprox."
+            value={kpisCalculados.sacosAprox.toFixed(1).replace('.', ',')}
+            unit="sacos"
+            subtitle="110 frutos por saco aprox."
+            icon={SacoIcon}
+            colorClass="text-teal-500"
+            bgClass="bg-teal-500/10"
+            circleColorClass="bg-teal-500/5"
+          />
+          <KpiCard
+            title="Ganancia Aprox."
+            value={kpisCalculados.gananciaAprox.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            unit="$"
+            subtitle="Basado en el precio ingresado"
+            icon={DollarSign}
+            colorClass="text-purple-500"
+            bgClass="bg-purple-500/10"
+            circleColorClass="bg-purple-500/5"
+          >
+            <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+              <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500">$/Saco:</span>
+              <div className="relative flex items-center">
+                <span className="absolute left-2 text-[10px] font-bold text-zinc-400 dark:text-zinc-500">$</span>
+                <input
+                  type="number"
+                  value={precioSaco === 0 ? '' : precioSaco}
+                  onChange={(e) => {
+                    const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                    setPrecioSaco(isNaN(val) ? 0 : val);
+                  }}
+                  className="w-16 pl-5 pr-1.5 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs font-bold text-zinc-850 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
+                  placeholder="0"
+                  min="0"
+                />
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase truncate">Flores</p>
-              <h3 className="text-xl font-bold text-zinc-950 dark:text-zinc-50 mt-0.5">
-                {metricasDestacadas.flores_polinizadas.toLocaleString('es-ES')} <span className="text-xs font-normal text-zinc-500">uds</span>
-              </h3>
-              <p className="text-[10px] text-zinc-450 dark:text-zinc-500 mt-0.5">
-                Total histórico acumulado
-              </p>
-            </div>
-            <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 rounded-full translate-x-4 -translate-y-4" />
-          </div>
+          </KpiCard>
+        </div>
 
-          {/* Card Kg */}
-          <div className="bg-gradient-to-br from-white to-zinc-50/50 dark:from-zinc-900 dark:to-zinc-900/40 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden flex items-center gap-4">
-            <div className="p-3 bg-amber-500/10 rounded-xl text-amber-500 flex-shrink-0">
-              <Scale className="w-6 h-6" />
+        {/* Vista Móvil: Slider deslizable horizontalmente */}
+        <div className="md:hidden flex flex-col items-center">
+          <div 
+            ref={kpiScrollRef}
+            onScroll={handleKpiScroll}
+            className="w-full overflow-x-auto snap-x snap-mandatory flex gap-4 no-scrollbar pb-1"
+          >
+            <div className="min-w-full snap-start flex flex-col gap-3 flex-shrink-0">
+              <KpiCard
+                title="Flores"
+                value={metricasDestacadas.flores_polinizadas.toLocaleString('es-ES')}
+                unit="uds"
+                subtitle="Total histórico acumulado"
+                icon={Leaf}
+                colorClass="text-emerald-500"
+                bgClass="bg-emerald-500/10"
+                circleColorClass="bg-emerald-500/5"
+              />
+              <KpiCard
+                title="Kilos Cosechados"
+                value={metricasDestacadas.kg_cosechados.toLocaleString('es-ES')}
+                unit="kg"
+                subtitle="Total histórico acumulado"
+                icon={Scale}
+                colorClass="text-amber-500"
+                bgClass="bg-amber-500/10"
+                circleColorClass="bg-amber-500/5"
+              />
+              <KpiCard
+                title="Pulpa Cosechada"
+                value={metricasDestacadas.pulpa_cosechada.toLocaleString('es-ES')}
+                unit="kg"
+                subtitle="Total histórico acumulado"
+                icon={Percent}
+                colorClass="text-blue-500"
+                bgClass="bg-blue-500/10"
+                circleColorClass="bg-blue-500/5"
+              />
             </div>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase truncate">Kilos Cosechados</p>
-              <h3 className="text-xl font-bold text-zinc-950 dark:text-zinc-50 mt-0.5">
-                {metricasDestacadas.kg_cosechados.toLocaleString('es-ES')} <span className="text-xs font-normal text-zinc-500">kg</span>
-              </h3>
-              <p className="text-[10px] text-zinc-450 dark:text-zinc-500 mt-0.5">
-                Total histórico acumulado
-              </p>
+            <div className="min-w-full snap-start flex flex-col gap-3 flex-shrink-0">
+              <KpiCard
+                title="Frutos Sanos Esperados"
+                value={kpisCalculados.frutosSanos.toLocaleString('es-ES')}
+                unit="uds"
+                subtitle="Est. del 50% de flores totales"
+                icon={ParchitaIcon}
+                colorClass="text-indigo-500"
+                bgClass="bg-indigo-500/10"
+                circleColorClass="bg-indigo-500/5"
+              />
+              <KpiCard
+                title="Sacos Aprox."
+                value={kpisCalculados.sacosAprox.toFixed(1).replace('.', ',')}
+                unit="sacos"
+                subtitle="110 frutos por saco aprox."
+                icon={SacoIcon}
+                colorClass="text-teal-500"
+                bgClass="bg-teal-500/10"
+                circleColorClass="bg-teal-500/5"
+              />
+              <KpiCard
+                title="Ganancia Aprox."
+                value={kpisCalculados.gananciaAprox.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                unit="$"
+                subtitle="Basado en el precio ingresado"
+                icon={DollarSign}
+                colorClass="text-purple-500"
+                bgClass="bg-purple-500/10"
+                circleColorClass="bg-purple-500/5"
+              >
+                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500">$/Saco:</span>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-2 text-[10px] font-bold text-zinc-400 dark:text-zinc-500">$</span>
+                    <input
+                      type="number"
+                      value={precioSaco === 0 ? '' : precioSaco}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                        setPrecioSaco(isNaN(val) ? 0 : val);
+                      }}
+                      className="w-16 pl-5 pr-1.5 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs font-bold text-zinc-850 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
+                      placeholder="0"
+                      min="0"
+                    />
+                  </div>
+                </div>
+              </KpiCard>
             </div>
-            <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/5 rounded-full translate-x-4 -translate-y-4" />
           </div>
-
-          {/* Card Pulpa */}
-          <div className="bg-gradient-to-br from-white to-zinc-50/50 dark:from-zinc-900 dark:to-zinc-900/40 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden flex items-center gap-4">
-            <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500 flex-shrink-0">
-              <Percent className="w-6 h-6" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase truncate">Pulpa Cosechada</p>
-              <h3 className="text-xl font-bold text-zinc-950 dark:text-zinc-50 mt-0.5">
-                {metricasDestacadas.pulpa_cosechada.toLocaleString('es-ES')} <span className="text-xs font-normal text-zinc-500">kg</span>
-              </h3>
-              <p className="text-[10px] text-zinc-450 dark:text-zinc-500 mt-0.5">
-                Total histórico acumulado
-              </p>
-            </div>
-            <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/5 rounded-full translate-x-4 -translate-y-4" />
+          
+          <div className="flex justify-center gap-2 mt-3 select-none">
+            <button 
+              type="button"
+              onClick={() => scrollToSlide(0)}
+              className={`w-2 h-2 rounded-full transition-all duration-300 cursor-pointer ${activeKpiSlide === 0 ? 'w-5 bg-emerald-600 dark:bg-emerald-500' : 'bg-zinc-350 dark:bg-zinc-800'}`}
+              aria-label="Grupo 1 de KPIs"
+            />
+            <button 
+              type="button"
+              onClick={() => scrollToSlide(1)}
+              className={`w-2 h-2 rounded-full transition-all duration-300 cursor-pointer ${activeKpiSlide === 1 ? 'w-5 bg-emerald-600 dark:bg-emerald-500' : 'bg-zinc-350 dark:bg-zinc-800'}`}
+              aria-label="Grupo 2 de KPIs"
+            />
           </div>
         </div>
       </div>

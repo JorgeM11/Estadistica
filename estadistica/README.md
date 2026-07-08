@@ -84,6 +84,9 @@ A continuación se detallan todos los hitos y características que hemos impleme
 | **19. Paginación de Registros (20 en 20)** | División del listado del historial en páginas de 20 registros con controles de navegación responsivos y reseteo automático al filtrar o reordenar. | 🟢 Completado | [components/RecordList.js](components/RecordList.js) |
 | **20. Reducción de Leyenda del Ciclo** | Ajuste de tamaño de fuente a `9px` y del icono a `4px` en la leyenda del gráfico de barras de trazabilidad dentro del modal para mejorar la legibilidad. | 🟢 Completado | [components/RecordList.js](components/RecordList.js) |
 | **21. Icono PWA Premium Personalizado** | Generación de una imagen de parchita con un gráfico de fondo en fondo verde esmeralda sólido (sin marcos internos ni anidados) y conversión a PNG en tamaños `192x192` y `512x512` para instalación de PWA. | 🟢 Completado | [public/icon-192x192.png](public/icon-192x192.png), [public/icon-512x512.png](public/icon-512x512.png) |
+| **22. KPIs Generales Avanzados & Slider** | Adición de 3 nuevos KPIs agrícolas generales de proyección (Frutos Sanos Esperados, Sacos Aprox. y Ganancia Aprox.) con cálculo interactivo en tiempo real al ingresar el precio del saco, iconos personalizados (Parchita y saco de cosecha) y un diseño adaptativo: cuadrícula 2x3 en laptops/desktop, alineación lado a lado del input de ganancia y un carrusel móvil deslizable con indicadores interactivos de punto. | 🟢 Completado | [components/Charts.js](components/Charts.js), [app/globals.css](app/globals.css) |
+
+
 
 ---
 
